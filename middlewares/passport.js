@@ -7,16 +7,16 @@ let JwtStrategy = passportJWT.Strategy;
 let jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 jwtOptions.secretOrKey = process.env.JWT_SECRET || "danbalacaithuboibac";
-//jwtOptions.issuer = "vnbcrip113"
+jwtOptions.issuer = "vnbc@rip113"
 module.exports = (passport) => {
   passport.use(
-    new JwtStrategy(jwtOptions, function (jwt_payload, done) {
+    new JwtStrategy(jwtOptions, async function (jwt_payload, done) {
       console.log("jwt payload received : ", jwt_payload);
-      let user = User.getUser({ id: jwt_payload.id });
+      let user = await User.getUser({ id: jwt_payload.id });
       if (user) {
-        done(null, user);
+        return done(null, user);
       } else {
-        done(null, false);
+        return done(null, false);
       }
     })
   );
