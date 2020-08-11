@@ -6,7 +6,7 @@ let JwtStrategy = passportJWT.Strategy;
 
 let jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-jwtOptions.secretOrKey = process.env.JWT_SECRET || "simplejwtsecret";
+jwtOptions.secretOrKey = process.env.JWT_SECRET || "danbalacaithuboibac";
 jwtOptions.issuer = "vnbc@rip113"
 
 module.exports = (passport) => {

@@ -19,6 +19,14 @@ class Account extends Model {
       },
     });
   };
+  static async deactivateAccount(account_id) {
+    return await Account.update(
+      { active: false },
+      {
+        where: { account_id },
+      }
+    );
+  }
 }
 Account.init(
   {

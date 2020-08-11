@@ -5,7 +5,6 @@ const bodyParser = require("body-parser");
 const db = require("./services/database");
 const passport = require("passport");
 const PORT = process.env.PORT || 3030;
-const path = require("path");
 
 const app = express();
 app.use(express.static('public'))
