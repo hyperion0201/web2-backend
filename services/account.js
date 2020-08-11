@@ -50,6 +50,17 @@ Account.init(
       values: ["spending", "saving"],
       defaultValue: "spending",
     },
+    interest_rate: {
+      type: Sequelize.FLOAT,
+      defaultValue: 0,
+    },
+    maturity_date: {
+      type: Sequelize.DATE,
+    },
+    term: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     sequelize: db,

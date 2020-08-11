@@ -8,7 +8,11 @@ class User extends Model {
   static hashPassword(pass) {
     return bcrypt.hashSync(pass, 10);
   }
-
+  static async updateIdentityImage(userId, identity_image_url) {
+    return await User.update({ identity_image_url}, {
+      where: { id: userId }
+    })
+  }
   static verifyPassword(password, hashPassword) {
     return bcrypt.compareSync(password, hashPassword);
   }
@@ -19,6 +23,17 @@ class User extends Model {
   }
   static async getAllUsers() {
     return await User.findAll();
+  }
+  static async updatePassword(userId, newPass) {
+
+    return await User.update(
+      {
+        password: this.hashPassword(newPass),
+      },
+      {
+        where: { id: userId },
+      }
+    );
   }
   static createUser = async ({
     username,
@@ -59,6 +74,11 @@ User.init(
     password: {
       type: Sequelize.STRING,
     },
+    status: {
+      type: Sequelize.ENUM,
+      values: ["unverified", "verified", "banned"],
+      defaultValue: "unverified",
+    },
     identity_type: {
       type: Sequelize.ENUM,
       values: ["cmnd", "cccd"],
@@ -67,6 +87,11 @@ User.init(
     identity_id: {
       type: Sequelize.STRING,
       allowNull: true,
+    },
+    identity_image_url: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+      allowNull: true
     },
     role: {
       type: Sequelize.ENUM,
