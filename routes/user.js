@@ -8,6 +8,7 @@ const sendMail = require("../services/email");
 
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
+    console.log('dir name : ', __dirname);
     cb(null, path.join(__dirname, "../public/uploads"));
   },
   filename: function (req, file, cb) {
