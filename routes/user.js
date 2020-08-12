@@ -19,15 +19,9 @@ const upload = multer({
   storage: storageConfiguration,
 });
 router.get(
-  "/:userId",
+  "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    const userId = _.get(req, "user.dataValues.id");
-    if (userId != req.params.userId) {
-      return res.status(403).send({
-        error: `Forbidden.`,
-      });
-    }
     res.json({
       user: req.user.dataValues,
     });
