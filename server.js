@@ -28,6 +28,7 @@ app.use("/register", require("./routes/register"));
 app.use("/login", require("./routes/login"));
 app.use("/account", require("./routes/account"));
 app.use("/user", require("./routes/user"));
+app.use('/transaction', require('./routes/transaction'));
 db.sync()
   .then(() => {
     app.listen(PORT);

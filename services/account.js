@@ -5,10 +5,11 @@ const User = require("./user");
 const Model = Sequelize.Model;
 
 class Account extends Model {
-  static createAccount = async ({ account_type, userId }) => {
+  static createAccount = async ({ account_type, currency, userId }) => {
     return await Account.create({
       account_id: v1(),
       account_type,
+      currency,
       userId,
     });
   };
@@ -26,6 +27,21 @@ class Account extends Model {
         where: { account_id },
       }
     );
+  }
+  static async checkAccountBelongToUser(account_id, userId) {
+    return await Account.findOne({
+      where: {
+        account_id,
+        userId,
+      },
+    });
+  }
+  static async findAccount(account_id) {
+    return await Account.findOne({
+      where: {
+        account_id,
+      },
+    });
   }
 }
 Account.init(

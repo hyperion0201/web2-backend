@@ -8,9 +8,10 @@ router.post("/", passport.authenticate("jwt", { session: false }), function (
   res
 ) {
   const userId = req.user.dataValues.id;
-  const { account_type } = req.body;
+  const { account_type, currency } = req.body;
   Account.createAccount({
     account_type,
+    currency,
     userId,
   }).then((account) =>
     res.json({ account, message: "Account created successfully" })
