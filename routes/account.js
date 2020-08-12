@@ -3,6 +3,18 @@ const Account = require("../services/account");
 const passport = require("passport");
 const _ = require("lodash");
 
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const accs = await Account.getAccountsByUser({
+      userId: req.user.dataValues.id,
+    });
+    res.json({
+      accounts: accs,
+    });
+  }
+);
 router.post("/", passport.authenticate("jwt", { session: false }), function (
   req,
   res
