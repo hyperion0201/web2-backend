@@ -43,6 +43,16 @@ class Account extends Model {
       },
     });
   }
+  static async updateAccount({ account_id, accountData }) {
+    return await Account.update(
+      {
+        ...accountData,
+      },
+      {
+        where: { account_id },
+      }
+    );
+  }
 }
 Account.init(
   {
@@ -57,10 +67,12 @@ Account.init(
     },
     transaction_history: {
       type: Sequelize.JSON,
-      defaultValue: {},
+      defaultValue: {
+        data: [],
+      },
     },
     account_balance: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.FLOAT,
       allowNull: false,
       defaultValue: 0,
     },

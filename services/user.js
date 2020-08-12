@@ -35,6 +35,7 @@ class User extends Model {
       }
     );
   }
+
   static createUser = async ({
     username,
     password,
