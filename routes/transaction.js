@@ -89,9 +89,7 @@ router.get(
     const account_id = _.get(req, "query.accountId");
     console.log("account : ", account_id);
     const account = await Account.findAccount(account_id);
-    res.json({
-      data: account.transaction_history,
-    });
+    res.json(account.transaction_history);
   }
 );
 module.exports = router;
