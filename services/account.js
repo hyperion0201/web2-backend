@@ -6,9 +6,9 @@ const Model = Sequelize.Model;
 class Account extends Model {
   static createAccount = async ({ account_type, currency, userId }) => {
     return await Account.create({
-      account_id: Math.random().toString().split('.')[1].substring(0,13),
+      account_id: Math.random().toString().split(".")[1].substring(0, 13),
       account_type,
-      active: account_type === "saving"? false : true,
+      active: account_type === "saving" ? false : true,
       currency,
       userId,
     });
@@ -23,6 +23,16 @@ class Account extends Model {
   static async deactivateAccount(account_id) {
     return await Account.update(
       { active: false },
+      {
+        where: { account_id },
+      }
+    );
+  }
+  static async activateAccount(account_id) {
+    return await Account.updateAccount(
+      {
+        active: true,
+      },
       {
         where: { account_id },
       }

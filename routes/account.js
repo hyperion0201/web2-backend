@@ -68,6 +68,23 @@ router.post(
   }
 );
 router.post(
+  "/activate",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const account_id = _.get(req, "body.account_id", null);
+    const accountFound = await Account.findAccount(account_id);
+    if (!accountFound) {
+      return res.status(400).send({
+        error: "Account not found.",
+      });
+    }
+    await Account.activateAccount(account_id);
+    res.json({
+      message: "Successfully activate account.",
+    });
+  }
+);
+router.post(
   "/charge",
   passport.authenticate("jwt", {
     session: false,

@@ -34,6 +34,21 @@ router.post(
       });
     }
     const rUser = await User.getUser({ id: rAccount.userId });
+    // check any account is locked
+    if (!dAccount.active) {
+      return res.json({
+        error: {
+          message: "Deposit account is locked. Can not transfer.",
+        },
+      });
+    }
+    if (!rAccount.active) {
+      return res.json({
+        error: {
+          message: "Receive account is locked. Can not transfer.",
+        },
+      });
+    }
     // get deposit currency
     // check if 2 account same currency
     if (dAccount.currency !== rAccount.currency) {
