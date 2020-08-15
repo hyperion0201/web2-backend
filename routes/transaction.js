@@ -79,7 +79,7 @@ router.post(
     });
     // send receipt via email
     sendMail(
-      dAccount.email,
+      dUser.email,
       "[VNBC Bank] - Transfer receipt",
       `Action : send
      From: ${dUser.fullName}
@@ -92,7 +92,7 @@ router.post(
     );
 
     sendMail(
-      dAccount.email,
+      rUser.email,
       "[VNBC Bank] - Transfer receipt",
       `Action : receive
      From: ${dUser.fullName}
