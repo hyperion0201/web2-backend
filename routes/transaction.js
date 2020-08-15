@@ -71,7 +71,9 @@ router.post(
     // push new receipt
     dHistory.data.push({
       action: "send",
-      to: rUser.fullName,
+      deposit_account_id,
+      receive_name: rUser.fullName,
+      receive_account_id,
       amount: parseFloat(amount),
       message,
       date: new Date().toLocaleString(),
@@ -87,7 +89,9 @@ router.post(
     let rHistory = _.get(rAccount, "transaction_history");
     rHistory.data.push({
       action: "receive",
-      from: dUser.fullName,
+      deposit_name: dUser.fullName,
+      deposit_account_id,
+      receive_account_id,
       amount: parseFloat(amount),
       message,
       date: new Date().toLocaleString(),
@@ -105,8 +109,8 @@ router.post(
       dUser.email,
       "[VNBC Bank] - Transfer receipt",
       `Action : send
-     From: ${dUser.fullName}
-     To: ${rUser.fullName}
+     From:  ${deposit_account_id} - ${dUser.fullName} 
+     To: ${receive_account_id} - ${rUser.fullName}
      Amount: ${amount} ${dAccount.currency}
      Message: ${message}
 
@@ -119,8 +123,8 @@ router.post(
       rUser.email,
       "[VNBC Bank] - Transfer receipt",
       `Action : receive
-     From: ${dUser.fullName}
-     To: ${rUser.fullName}
+     From: ${deposit_account_id} - ${dUser.fullName}
+     To: ${receive_account_id} - ${rUser.fullName}
      Amount: ${amount} ${dAccount.currency}
      Message: ${message}
 

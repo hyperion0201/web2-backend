@@ -54,6 +54,7 @@ router.post(
   "/deactivate",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
+    // check account belong to user before 
     const account_id = _.get(req, "body.account_id", null);
     const accountFound = await Account.findAccount(account_id);
     if (!accountFound) {
