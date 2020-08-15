@@ -42,7 +42,7 @@ router.post(
         error: `Old password didn't match.`,
       });
     }
-    const response = await User.updatePassword(userId, newPass);
+     await User.updatePassword(userId, newPass);
     res.json({
       message: "Successfully updated password.",
     });
@@ -76,7 +76,7 @@ router.post("/forgotPassword", async (req, res) => {
 });
 
 router.post(
-  "/verify",
+  "/upload-id",
   passport.authenticate("jwt", { session: false }),
   upload.single("identity"),
   async (req, res) => {
@@ -91,4 +91,7 @@ router.post(
     });
   }
 );
+router.post('/verify-user', passport.authenticate('jwt', {
+  session: false
+}))
 module.exports = router;

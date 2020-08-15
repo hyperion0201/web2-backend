@@ -38,13 +38,17 @@ router.post(
     // check if 2 account same currency
     if (dAccount.currency !== rAccount.currency) {
       return res.json({
-        message: "Two account is not same currency.",
+        error: {
+          message: "Two account is not same currency.",
+        },
       });
     }
     // check dAccount has enough money to transfer
     if (dAccount.account_balance <= parseFloat(amount)) {
       return res.json({
-        message: "Not enough money to transfer.",
+        error: {
+          message: "Not enough money to transfer.",
+        },
       });
     }
     // perform transfer
