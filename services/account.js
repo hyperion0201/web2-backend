@@ -29,7 +29,7 @@ class Account extends Model {
     );
   }
   static async activateAccount(account_id) {
-    return await Account.updateAccount(
+    return await Account.update(
       {
         active: true,
       },
