@@ -8,6 +8,7 @@ class Account extends Model {
     return await Account.create({
       account_id: Math.random().toString().split('.')[1].substring(0,13),
       account_type,
+      active: account_type === "saving"? false : true,
       currency,
       userId,
     });

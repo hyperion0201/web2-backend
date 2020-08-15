@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Account = require("../services/account");
 const passport = require("passport");
 const User = require("../services/user");
+const sendMail = require("../services/email");
 
 const _ = require("lodash");
 
@@ -76,6 +77,33 @@ router.post(
         account_balance: rAccount.account_balance + parseFloat(amount),
       },
     });
+    // send receipt via email
+    sendMail(
+      dAccount.email,
+      "[VNBC Bank] - Transfer receipt",
+      `Action : send
+     From: ${dUser.fullName}
+     To: ${rUser.fullName}
+     Amount: ${amount} ${dAccount.currency}
+
+
+     Thanks
+     VNBC Bank - The best bank on the planet`
+    );
+
+    sendMail(
+      dAccount.email,
+      "[VNBC Bank] - Transfer receipt",
+      `Action : receive
+     From: ${dUser.fullName}
+     To: ${rUser.fullName}
+     Amount: ${amount} ${dAccount.currency}
+
+
+     Thanks
+     VNBC Bank - The best bank on the planet`
+    );
+
     res.json({
       message: "Okay",
     });

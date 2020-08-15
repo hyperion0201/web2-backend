@@ -73,7 +73,6 @@ router.post(
     session: false,
   }),
   async (req, res) => {
-    const user = _.get(req, "user.dataValues");
     const account_id = _.get(req, "body.account_id", null);
     const amount = _.get(req, "body.amount", 0);
     const accountFound = await Account.findAccount(account_id);
