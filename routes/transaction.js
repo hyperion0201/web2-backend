@@ -14,6 +14,8 @@ router.post(
     const deposit_account_id = _.get(req, "body.deposit_account_id", null);
     const receive_account_id = _.get(req, "body.receive_account_id", null);
     const amount = _.get(req, "body.amount", null);
+    const message = _.get(req, "body.message", "send");
+
     // check account is fake
     const dAccount = await Account.checkAccountBelongToUser(
       deposit_account_id,
@@ -52,6 +54,7 @@ router.post(
       action: "send",
       to: rUser.fullName,
       amount: parseFloat(amount),
+      message,
       date: new Date().toLocaleString(),
     });
     // update dAccount
@@ -67,6 +70,7 @@ router.post(
       action: "receive",
       from: dUser.fullName,
       amount: parseFloat(amount),
+      message,
       date: new Date().toLocaleString(),
     });
     // update rAccount
@@ -85,6 +89,7 @@ router.post(
      From: ${dUser.fullName}
      To: ${rUser.fullName}
      Amount: ${amount} ${dAccount.currency}
+     Message: ${message}
 
 
      Thanks
@@ -98,6 +103,7 @@ router.post(
      From: ${dUser.fullName}
      To: ${rUser.fullName}
      Amount: ${amount} ${dAccount.currency}
+     Message: ${message}
 
 
      Thanks
