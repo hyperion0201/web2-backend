@@ -1,13 +1,12 @@
 const Sequelize = require("sequelize");
 const db = require("./database");
-const { v1 } = require("uuid");
 const User = require("./user");
 const Model = Sequelize.Model;
 
 class Account extends Model {
   static createAccount = async ({ account_type, currency, userId }) => {
     return await Account.create({
-      account_id: v1(),
+      account_id: Math.random().toString().split('.')[1].substring(0,13),
       account_type,
       currency,
       userId,

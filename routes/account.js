@@ -54,13 +54,13 @@ router.post(
   "/deactivate",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    const user = _.get(req, "user.dataValues", null);
-    if (user.role !== "staff") {
+    const account_id = _.get(req, "body.account_id", null);
+    const accountFound = await Account.findAccount(account_id);
+    if (!accountFound) {
       return res.status(400).send({
-        error: `You must be our staff to make this request.`,
+        error: "Account not found.",
       });
     }
-    const account_id = _.get(req, "body.account_id", null);
     await Account.deactivateAccount(account_id);
     res.json({
       message: "Successfully deactivate account.",
