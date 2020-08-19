@@ -5,7 +5,6 @@ const passport = require("passport");
 const path = require("path");
 const _ = require("lodash");
 const sendMail = require("../services/email");
-const { filter } = require("lodash");
 
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -103,16 +102,53 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     const user = _.get(req, "user.dataValues");
-    const query = _.get(req, 'body.query');
+    const query = _.get(req, "body.query");
     if (user.role !== "staff") {
       return res.status(400).send({
         error: "Staff required.",
       });
     }
     const users = await User.getAllUsers();
-    console.log(users[0].role);
     const filteredUser = _.filter(users, query);
     res.json(filteredUser);
+  }
+);
+router.put(
+  "/update-user",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    // check staff token
+    const stateUser = _.get(req, "user.dataValues");
+    if (stateUser.role !== "staff") {
+      return res.status(400).send({
+        error: "Staff required.",
+      });
+    }
+    // get userId to update
+    const userId = _.get(req, "query.userId", null);
+    const user = await User.getUser({
+      id: userId,
+    });
+    if (!user) {
+      return res.status(400).send({
+        error: "User not found.",
+      });
+    }
+    const data = _.get(req, "body");
+    try {
+      await User.updateUser({
+        userId,
+        ...data,
+      });
+      return res.json({
+        message: "Sucessfully updated user.",
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({
+        error: "Server error.",
+      });
+    }
   }
 );
 module.exports = router;
