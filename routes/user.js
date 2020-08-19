@@ -102,12 +102,14 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     const user = _.get(req, "user.dataValues");
-    const query = _.get(req, "body.query");
+    const query = _.get(req, "body.query", {});
     if (user.role !== "staff") {
       return res.status(400).send({
         error: "Staff required.",
       });
     }
+    _.set(query, 'role', 'customer');
+    console.log(query);
     const users = await User.getAllUsers();
     const filteredUser = _.filter(users, query);
     res.json(filteredUser);
