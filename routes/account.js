@@ -32,7 +32,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), function (
 ) {
   const userId = req.user.dataValues.id;
   const userStatus = req.user.dataValues.status;
-  if (userStatus !=='verified') {
+  if (userStatus !== "verified") {
     return res.json({
       error: {
         message: "Account is not verified or banned.",
@@ -62,7 +62,7 @@ router.post(
   "/deactivate",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    // check account belong to user before 
+    // check account belong to user before
     const account_id = _.get(req, "body.account_id", null);
     const accountFound = await Account.findAccount(account_id);
     if (!accountFound) {
@@ -118,6 +118,43 @@ router.post(
     res.json({
       message: "Successfully charge account.",
     });
+  }
+);
+router.put(
+  "/update-account",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  async (req, res) => {
+    const stateUser = _.get(req, "user.dataValues");
+    if (stateUser.role !== "staff") {
+      return res.statusCode(400).send({
+        error: "Staff required.",
+      });
+    }
+    const accountId = _.get(req, "query.accountId");
+    const account = await Account.findAccount(accountId);
+    if (!account) {
+      return res.status(400).send({
+        error: "Account not found.",
+      });
+    }
+    const data = _.get(req, "body");
+    try {
+      await Account.updateAccount({
+        account_id: accountId,
+        accountData: {
+          ...data,
+        },
+      });
+      return res.json({
+        message: "Successfully update account.",
+      });
+    } catch (err) {
+      return res.status(500).send({
+        error: "Server error.",
+      });
+    }
   }
 );
 module.exports = router;
