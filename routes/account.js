@@ -31,6 +31,14 @@ router.post("/", passport.authenticate("jwt", { session: false }), function (
   res
 ) {
   const userId = req.user.dataValues.id;
+  const userStatus = req.user.dataValues.status;
+  if (userStatus !=='verified') {
+    return res.json({
+      error: {
+        message: "Account is not verified or banned.",
+      },
+    });
+  }
   const { account_type, currency } = req.body;
   Account.createAccount({
     account_type,

@@ -5,10 +5,11 @@ const passport = require("passport");
 const path = require("path");
 const _ = require("lodash");
 const sendMail = require("../services/email");
+const { filter } = require("lodash");
 
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
-    console.log('dir name : ', __dirname);
+    console.log("dir name : ", __dirname);
     cb(null, path.join(__dirname, "../public/uploads"));
   },
   filename: function (req, file, cb) {
@@ -42,7 +43,7 @@ router.post(
         error: `Old password didn't match.`,
       });
     }
-     await User.updatePassword(userId, newPass);
+    await User.updatePassword(userId, newPass);
     res.json({
       message: "Successfully updated password.",
     });
@@ -91,7 +92,27 @@ router.post(
     });
   }
 );
-router.post('/verify-user', passport.authenticate('jwt', {
-  session: false
-}))
+router.post(
+  "/verify-user",
+  passport.authenticate("jwt", {
+    session: false,
+  })
+);
+router.post(
+  "/all",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const user = _.get(req, "user.dataValues");
+    const query = _.get(req, 'body.query');
+    if (user.role !== "staff") {
+      return res.status(400).send({
+        error: "Staff required.",
+      });
+    }
+    const users = await User.getAllUsers();
+    console.log(users[0].role);
+    const filteredUser = _.filter(users, query);
+    res.json(filteredUser);
+  }
+);
 module.exports = router;
