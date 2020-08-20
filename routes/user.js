@@ -108,16 +108,21 @@ router.post(
         error: "Staff required.",
       });
     }
-    //_.set(query, 'role', 'customer');
-    console.log(query);
+
     const users = await User.getAllUsers();
-    const filteredUser = _.filter(
-      users,
-      (el) =>
+    if (_.isEmpty(query)) {
+      let filteredUser  = _.filter(users, (el) => {
+        return _.includes(el.role, "customer");
+      })
+      return res.json(filteredUser);
+    }
+    const filteredUser = _.filter(users, (el) => {
+      return (
         (_.includes(el.username, query.username) ||
           _.includes(el.identity_id, query.identity_id)) &&
         _.includes(el.role, "customer")
-    );
+      );
+    });
     res.json(filteredUser);
   }
 );
