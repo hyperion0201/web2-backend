@@ -107,12 +107,19 @@ router.post(
         error: "Account not found.",
       });
     }
+    let accountData = {
+      account_balance: accountFound.account_balance + parseFloat(amount),
+    };
+    if (
+      accountFound.account_type === "saving" &&
+      accountFound.account_balance === 0
+    ) {
+      _.set(accountData, "active_date", new Date().toLocaleString());
+    }
     // nap tien xd
     await Account.updateAccount({
       account_id,
-      accountData: {
-        account_balance: accountFound.account_balance + parseFloat(amount),
-      },
+      accountData,
     });
 
     res.json({

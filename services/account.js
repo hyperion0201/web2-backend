@@ -103,6 +103,9 @@ Account.init(
     maturity_date: {
       type: Sequelize.DATE,
     },
+    active_date: {
+      type: Sequelize.DATE
+    },
     term: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
