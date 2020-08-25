@@ -10,23 +10,25 @@ router.get(
     const role = _.get(req, "user.dataValues.role");
     const userIdFromToken = _.get(req, "user.dataValues.id");
     if (role === "customer") {
-      console.log(' userid from token : ', userIdFromToken);
+      console.log(" userid from token : ", userIdFromToken);
       const accs = await Account.getAccountsByUser({
         userId: userIdFromToken,
       });
-      console.log('acc : ', accs);
+      console.log("acc : ", accs);
+      return res.json({
+        accounts: accs,
+      });
+    } else {
+      // staff:
+      const userId = _.get(req, "query.userId");
+      console.log("id query : ", userId);
+      const accs = await Account.getAccountsByUser({
+        userId,
+      });
       return res.json({
         accounts: accs,
       });
     }
-    // staff:
-    const userId = _.get(req, "query.userId");
-    const accs = await Account.getAccountsByUser({
-      userId,
-    });
-    return res.json({
-      accounts: accs,
-    });
   }
 );
 router.post("/", passport.authenticate("jwt", { session: false }), function (
