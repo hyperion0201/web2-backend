@@ -208,18 +208,20 @@ router.post(
         dateFrom: new Date(savAccount.active_date),
         dateTo: new Date(savAccount.maturity_date),
       });
+      let newHistory = desAccount.transaction_history.data.push({
+        action: "receive",
+        deposit_account_id: sav_account_id,
+        receive_account_id: des_account_id,
+        amount: parseFloat(newBalance),
+        message: `Withdraw from saving account: ${sav_account_id}`,
+        date: new Date().toLocaleString(),
+      });
+      console.log("new : ", newHistory);
       await Account.updateAccount({
         account_id: des_account_id,
         accountData: {
           account_balance: desAccount.account_balance + newBalance,
-          transaction_history: desAccount.transaction_history.data.push({
-            action: "receive",
-            deposit_account_id: sav_account_id,
-            receive_account_id: des_account_id,
-            amount: parseFloat(newBalance),
-            message: `Withdraw from saving account: ${sav_account_id}`,
-            date: new Date().toLocaleString(),
-          }),
+          transaction_history: newHistory,
         },
       });
       return res.json({
