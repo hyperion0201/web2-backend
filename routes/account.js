@@ -193,7 +193,7 @@ router.post(
         });
       }
       console.log("sav acc: ", savAccount);
-      console.log('des acc : ', desAccount);
+      console.log('des acc : ', desAccount.transaction_history);
       // set saving balance to 0
       await Account.updateAccount({
         account_id: sav_account_id,
