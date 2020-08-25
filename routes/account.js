@@ -176,54 +176,63 @@ router.post(
     session: false,
   }),
   async (req, res) => {
-    const sav_account_id = _.get(req, "body.sav_account_id");
-    const des_account_id = _.get(req, "body.des_account_id");
+    try {
+      const sav_account_id = _.get(req, "body.sav_account_id");
+      const des_account_id = _.get(req, "body.des_account_id");
 
-    const savAccount = await Account.findAccount(sav_account_id);
-    if (!savAccount || savAccount.account_type === "spending") {
-      return res.status(400).send({
-        error: "Account not found or spending account detected.",
+      const savAccount = await Account.findAccount(sav_account_id);
+      if (!savAccount || savAccount.account_type === "spending") {
+        return res.status(400).send({
+          error: "Account not found or spending account detected.",
+        });
+      }
+      const desAccount = await Account.findAccount(des_account_id);
+      if (!desAccount || desAccount.account_type === "saving") {
+        return res.status(400).send({
+          error: "Destination account must be spending account.",
+        });
+      }
+      console.log("sav acc: ", savAccount);
+      console.log('des acc : ', desAccount);
+      // set saving balance to 0
+      await Account.updateAccount({
+        account_id: sav_account_id,
+        accountData: {
+          account_balance: 0,
+          active: false,
+        },
+      });
+
+      // calc interest
+
+      let newBalance = Account.calcInterest({
+        balance: desAccount.account_balance,
+        dateFrom: new Date(savAccount.active_date),
+        dateTo: new Date(savAccount.maturity_date),
+      });
+      await Account.updateAccount({
+        account_id: des_account_id,
+        accountData: {
+          account_balance: desAccount.account_balance + newBalance,
+          transaction_history: desAccount.transaction_history.push({
+            action: "receive",
+            deposit_account_id: sav_account_id,
+            receive_account_id: des_account_id,
+            amount: parseFloat(newBalance),
+            message: `Withdraw from saving account: ${sav_account_id}`,
+            date: new Date().toLocaleString(),
+          }),
+        },
+      });
+      return res.json({
+        message: "Successfully withdraw.",
+      });
+    } catch (err) {
+      console.log("err cmnr : ", err);
+      return res.status(500).send({
+        error: "Internal server error. DKM",
       });
     }
-    const desAccount = await Account.findAccount(des_account_id);
-    if (!desAccount || desAccount.account_type === "saving") {
-      return res.status(400).send({
-        error: "Destination account must be spending account.",
-      });
-    }
-    // set saving balance to 0
-    await Account.updateAccount({
-      account_id: sav_account_id,
-      accountData: {
-        account_balance: 0,
-        active: false,
-      },
-    });
-
-    // calc interest
-
-    let newBalance = Account.calcInterest({
-      balance: desAccount.account_balance,
-      dateFrom: new Date(savAccount.active_date),
-      dateTo: new Date(savAccount.maturity_date),
-    });
-    await Account.updateAccount({
-      account_id: des_account_id,
-      accountData: {
-        account_balance: desAccount.account_balance + newBalance,
-        transaction_history: desAccount.transaction_history.push({
-          action: "receive",
-          deposit_account_id: sav_account_id,
-          receive_account_id: des_account_id,
-          amount: parseFloat(newBalance),
-          message: `Withdraw from saving account: ${sav_account_id}`,
-          date: new Date().toLocaleString(),
-        }),
-      },
-    });
-    return res.json({
-      message: "Successfully withdraw.",
-    });
   }
 );
 module.exports = router;
