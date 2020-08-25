@@ -8,9 +8,10 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     const role = _.get(req, "user.dataValues.role");
+    const userId = _.get(req, "user.dataValues.id");
     if (role === "customer") {
       const accs = await Account.getAccountsByUser({
-        userId: req.user.dataValues.id,
+        userId,
       });
       return res.json({
         accounts: accs,
@@ -208,8 +209,9 @@ router.post(
         dateFrom: new Date(savAccount.active_date),
         dateTo: new Date(savAccount.maturity_date),
       });
-      console.log('history : ', desAccount.transaction_history);
-      let newHistory = desAccount.transaction_history.data.push({
+
+      let newHistory = _.get(desAccount, "transaction_history.data");
+      newHistory.push({
         action: "receive",
         deposit_account_id: sav_account_id,
         receive_account_id: des_account_id,
