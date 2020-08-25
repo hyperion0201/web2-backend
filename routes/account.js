@@ -8,10 +8,10 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     const role = _.get(req, "user.dataValues.role");
-    const userId = _.get(req, "user.dataValues.id");
+    const userIdFromToken = _.get(req, "user.dataValues.id");
     if (role === "customer") {
       const accs = await Account.getAccountsByUser({
-        userId,
+        userId: userIdFromToken,
       });
       return res.json({
         accounts: accs,
