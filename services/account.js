@@ -63,6 +63,14 @@ class Account extends Model {
       }
     );
   }
+  static calcInterest({
+    balance,
+    rate,
+    startDate, 
+    endDate
+  }) {
+    
+  }
 }
 Account.init(
   {

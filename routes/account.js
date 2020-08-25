@@ -164,4 +164,40 @@ router.put(
     }
   }
 );
+router.post(
+  "/withdraw",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  async (req, res) => {
+    const sav_account_id = _.get(req, "body.sav_account_id");
+    const des_account_id = _.get(req, "body.des_account_id");
+
+    const accountFound = await Account.findAccount(sav_account_id);
+    if (!accountFound || accountFound.account_type === "spending") {
+      return res.status(400).send({
+        error: "Account not found or spending account detected.",
+      });
+    }
+    const desAccount = await Account.findAccount(des_account_id);
+    if (!desAccount || desAccount.account_type === "saving") {
+      return res.status(400).send({
+        error: "Destination account must be spending account.",
+      });
+    }
+    // set saving balance to 0
+    await Account.updateAccount({
+      account_id: sav_account_id,
+      accountData: {
+        account_balance: 0,
+        active: false,
+      },
+    });
+
+    // calc interest
+    return res.json({
+      message: "Successfully withdraw.",
+    });
+  }
+);
 module.exports = router;
