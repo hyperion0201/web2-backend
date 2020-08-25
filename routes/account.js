@@ -208,6 +208,7 @@ router.post(
         dateFrom: new Date(savAccount.active_date),
         dateTo: new Date(savAccount.maturity_date),
       });
+      console.log('history : ', desAccount.transaction_history);
       let newHistory = desAccount.transaction_history.data.push({
         action: "receive",
         deposit_account_id: sav_account_id,
