@@ -192,8 +192,6 @@ router.post(
           error: "Destination account must be spending account.",
         });
       }
-      console.log("sav acc: ", savAccount);
-      console.log('des acc : ', desAccount.transaction_history);
       // set saving balance to 0
       await Account.updateAccount({
         account_id: sav_account_id,
@@ -214,7 +212,7 @@ router.post(
         account_id: des_account_id,
         accountData: {
           account_balance: desAccount.account_balance + newBalance,
-          transaction_history: desAccount.transaction_history.push({
+          transaction_history: desAccount.transaction_history.data.push({
             action: "receive",
             deposit_account_id: sav_account_id,
             receive_account_id: des_account_id,
@@ -230,7 +228,7 @@ router.post(
     } catch (err) {
       console.log("err cmnr : ", err);
       return res.status(500).send({
-        error: "Internal server error. DKM",
+        error: "Internal server error.",
       });
     }
   }
