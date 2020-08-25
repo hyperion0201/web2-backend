@@ -210,8 +210,8 @@ router.post(
         dateTo: new Date(savAccount.maturity_date),
       });
 
-      let newHistory = _.get(desAccount, "transaction_history.data");
-      newHistory.push({
+      let newHistory = _.get(desAccount, "transaction_history");
+      newHistory.data.push({
         action: "receive",
         deposit_account_id: sav_account_id,
         receive_account_id: des_account_id,
