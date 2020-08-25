@@ -2,7 +2,7 @@ const Sequelize = require("sequelize");
 const db = require("./database");
 const User = require("./user");
 const Model = Sequelize.Model;
-
+const bankRate = require("../services/rate");
 class Account extends Model {
   static createAccount = async ({ account_type, currency, userId }) => {
     return await Account.create({
@@ -63,13 +63,31 @@ class Account extends Model {
       }
     );
   }
-  static calcInterest({
-    balance,
-    rate,
-    startDate, 
-    endDate
-  }) {
-    
+  static getMonthDiff(dateFrom, dateTo) {
+    return Math.abs(
+      dateTo.getMonth() -
+        dateFrom.getMonth() +
+        12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+    );
+  }
+  static calcInterest({ balance, dateFrom, dateTo }) {
+    // calc month
+    let mondiff = this.getMonthDiff(dateFrom, dateTo);
+    if (mondiff < 12) {
+      return balance + (balance / 100) * 0.5;
+    } else if (mondiff < 24) {
+      return balance + (balance / 100) * 1.5;
+    } else if (mondiff < 36) {
+      return balance + (balance / 100) * 2;
+    } else if (mondiff < 72) {
+      return balance + (balance / 100) * 2.5;
+    } else if (mondiff < 81) {
+      return balance + (balance / 100) * 3.5;
+    } else if (mondiff < 144) {
+      return balance + (balance / 100) * 4.5;
+    } else {
+      return balance + (balance / 100) * 6;
+    }
   }
 }
 Account.init(
@@ -112,7 +130,7 @@ Account.init(
       type: Sequelize.DATE,
     },
     active_date: {
-      type: Sequelize.DATE
+      type: Sequelize.DATE,
     },
     term: {
       type: Sequelize.INTEGER,

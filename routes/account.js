@@ -99,6 +99,12 @@ router.post(
     session: false,
   }),
   async (req, res) => {
+    const stateUser = _.get(req, "user.dataValues");
+    if (stateUser.role !== "staff") {
+      return res.statusCode(400).send({
+        error: "Staff required.",
+      });
+    }
     const account_id = _.get(req, "body.account_id", null);
     const amount = _.get(req, "body.amount", 0);
     const accountFound = await Account.findAccount(account_id);
@@ -173,8 +179,8 @@ router.post(
     const sav_account_id = _.get(req, "body.sav_account_id");
     const des_account_id = _.get(req, "body.des_account_id");
 
-    const accountFound = await Account.findAccount(sav_account_id);
-    if (!accountFound || accountFound.account_type === "spending") {
+    const savAccount = await Account.findAccount(sav_account_id);
+    if (!savAccount || savAccount.account_type === "spending") {
       return res.status(400).send({
         error: "Account not found or spending account detected.",
       });
@@ -195,6 +201,26 @@ router.post(
     });
 
     // calc interest
+
+    let newBalance = Account.calcInterest({
+      balance: desAccount.account_balance,
+      dateFrom: new Date(savAccount.active_date),
+      dateTo: new Date(savAccount.maturity_date),
+    });
+    await Account.updateAccount({
+      account_id: des_account_id,
+      accountData: {
+        account_balance: desAccount.account_balance + newBalance,
+        transaction_history: desAccount.transaction_history.push({
+          action: "receive",
+          deposit_account_id: sav_account_id,
+          receive_account_id: des_account_id,
+          amount: parseFloat(newBalance),
+          message: `Withdraw from saving account: ${sav_account_id}`,
+          date: new Date().toLocaleString(),
+        }),
+      },
+    });
     return res.json({
       message: "Successfully withdraw.",
     });
