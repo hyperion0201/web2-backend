@@ -10,9 +10,11 @@ router.get(
     const role = _.get(req, "user.dataValues.role");
     const userIdFromToken = _.get(req, "user.dataValues.id");
     if (role === "customer") {
+      console.log(' userid from token : ', userIdFromToken);
       const accs = await Account.getAccountsByUser({
         userId: userIdFromToken,
       });
+      console.log('acc : ', accs);
       return res.json({
         accounts: accs,
       });
