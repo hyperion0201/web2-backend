@@ -9,6 +9,7 @@ const sendMail = require("../services/email");
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
     console.log("dir name : ", __dirname);
+    console.log("sadads:", path.join(__dirname, "../public/uploads"));
     cb(null, path.join(__dirname, "../public/uploads"));
   },
   filename: function (req, file, cb) {
@@ -111,9 +112,9 @@ router.post(
 
     const users = await User.getAllUsers();
     if (_.isEmpty(query)) {
-      let filteredUser  = _.filter(users, (el) => {
+      let filteredUser = _.filter(users, (el) => {
         return _.includes(el.role, "customer");
-      })
+      });
       return res.json(filteredUser);
     }
     const filteredUser = _.filter(users, (el) => {
