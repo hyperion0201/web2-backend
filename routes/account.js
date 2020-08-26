@@ -208,7 +208,7 @@ router.post(
       // calc interest
 
       let newBalance = Account.calcInterest({
-        balance: desAccount.account_balance,
+        balance: savAccount.account_balance,
         dateFrom: new Date(savAccount.active_date),
         dateTo: new Date(),
       });
