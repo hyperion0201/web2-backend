@@ -14,7 +14,6 @@ router.get(
       const accs = await Account.getAccountsByUser({
         userId: userIdFromToken,
       });
-      console.log("acc : ", accs);
       return res.json({
         accounts: accs,
       });
@@ -211,7 +210,7 @@ router.post(
       let newBalance = Account.calcInterest({
         balance: desAccount.account_balance,
         dateFrom: new Date(savAccount.active_date),
-        dateTo: new Date(savAccount.maturity_date),
+        dateTo: new Date(),
       });
 
       let newHistory = _.get(desAccount, "transaction_history");
@@ -223,7 +222,6 @@ router.post(
         message: `Withdraw from saving account: ${sav_account_id}`,
         date: new Date().toLocaleString(),
       });
-      console.log("new : ", newHistory);
       await Account.updateAccount({
         account_id: des_account_id,
         accountData: {
