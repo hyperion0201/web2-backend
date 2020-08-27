@@ -105,14 +105,14 @@ router.post(
       `
     );
 
-    // update dAccount
-    // await Account.updateAccount({
-    //   account_id: deposit_account_id,
-    //   accountData: {
-    //     transaction_history: dHistory,
-    //     account_balance: dAccount.account_balance - parseFloat(amount),
-    //   },
-    // });
+    //update dAccount
+    await Account.updateAccount({
+      account_id: deposit_account_id,
+      accountData: {
+        transaction_history: dHistory,
+        //account_balance: dAccount.account_balance - parseFloat(amount),
+      },
+    });
 
     // let rHistory = _.get(rAccount, "transaction_history");
     // rHistory.data.push({
