@@ -2,8 +2,8 @@ const router = require("express").Router();
 const Account = require("../services/account");
 const passport = require("passport");
 const User = require("../services/user");
+const crypto = require("crypto");
 const sendMail = require("../services/email");
-
 const _ = require("lodash");
 
 router.post(
@@ -68,9 +68,12 @@ router.post(
     }
     // perform transfer
     let dHistory = _.get(dAccount, "transaction_history");
-    // push new receipt
+    // push new receipt with otp ready
+    const otpCode = crypto.randomBytes(3).toString("hex");
     dHistory.data.push({
       action: "send",
+      otp_status: "unconfirmed",
+      otp_code: otpCode,
       deposit_account_id,
       receive_name: rUser.fullName,
       receive_account_id,
@@ -78,60 +81,87 @@ router.post(
       message,
       date: new Date().toLocaleString(),
     });
-    // update dAccount
-    await Account.updateAccount({
-      account_id: deposit_account_id,
-      accountData: {
-        transaction_history: dHistory,
-        account_balance: dAccount.account_balance - parseFloat(amount),
-      },
-    });
-    let rHistory = _.get(rAccount, "transaction_history");
-    rHistory.data.push({
-      action: "receive",
-      deposit_name: dUser.fullName,
-      deposit_account_id,
-      receive_account_id,
-      amount: parseFloat(amount),
-      message,
-      date: new Date().toLocaleString(),
-    });
-    // update rAccount
-    await Account.updateAccount({
-      account_id: receive_account_id,
-      accountData: {
-        transaction_history: rHistory,
-        account_balance: rAccount.account_balance + parseFloat(amount),
-      },
-    });
-    // send receipt via email
+
+    // send OTP via email to confirm transaction
     sendMail(
       dUser.email,
-      "[VNBC Bank] - Transfer receipt",
-      `Action : send
-     From:  ${deposit_account_id} - ${dUser.fullName} 
-     To: ${receive_account_id} - ${rUser.fullName}
-     Amount: ${amount} ${dAccount.currency}
-     Message: ${message}
+      `[VNBC Bank] - Transaction confirm`,
+      `
+      Hello ${dUser.email},
+      This is your transaction info: 
+      Action : send
+      From:  ${deposit_account_id} - ${dUser.fullName} 
+      To: ${receive_account_id} - ${rUser.fullName}
+      Amount: ${amount} ${dAccount.currency}
+      Message: ${message}
 
 
-     Thanks
-     VNBC Bank - The best bank on the planet`
-    );
-
-    sendMail(
-      rUser.email,
-      "[VNBC Bank] - Transfer receipt",
-      `Action : receive
-     From: ${deposit_account_id} - ${dUser.fullName}
-     To: ${receive_account_id} - ${rUser.fullName}
-     Amount: ${amount} ${dAccount.currency}
-     Message: ${message}
-
+      Please read these carefully.
+      Your OTP for this transaction is: ${otpCode}. 
+      
 
      Thanks
-     VNBC Bank - The best bank on the planet`
+     VNBC Bank - The best bank on the planet
+      `
     );
+
+    // update dAccount
+    // await Account.updateAccount({
+    //   account_id: deposit_account_id,
+    //   accountData: {
+    //     transaction_history: dHistory,
+    //     account_balance: dAccount.account_balance - parseFloat(amount),
+    //   },
+    // });
+
+    // let rHistory = _.get(rAccount, "transaction_history");
+    // rHistory.data.push({
+    //   action: "receive",
+    //   deposit_name: dUser.fullName,
+    //   deposit_account_id,
+    //   receive_account_id,
+    //   amount: parseFloat(amount),
+    //   message,
+    //   date: new Date().toLocaleString(),
+    // });
+
+    // update rAccount
+    // await Account.updateAccount({
+    //   account_id: receive_account_id,
+    //   accountData: {
+    //     transaction_history: rHistory,
+    //     account_balance: rAccount.account_balance + parseFloat(amount),
+    //   },
+    // });
+
+    // send receipt via email
+    // sendMail(
+    //   dUser.email,
+    //   "[VNBC Bank] - Transfer receipt",
+    //   `
+    //  Action : send
+    //  From:  ${deposit_account_id} - ${dUser.fullName}
+    //  To: ${receive_account_id} - ${rUser.fullName}
+    //  Amount: ${amount} ${dAccount.currency}
+    //  Message: ${message}
+
+    //  Thanks
+    //  VNBC Bank - The best bank on the planet`
+    // );
+
+    // sendMail(
+    //   rUser.email,
+    //   "[VNBC Bank] - Transfer receipt",
+    //   `
+    //  Action : receive
+    //  From: ${deposit_account_id} - ${dUser.fullName}
+    //  To: ${receive_account_id} - ${rUser.fullName}
+    //  Amount: ${amount} ${dAccount.currency}
+    //  Message: ${message}
+
+    //  Thanks
+    //  VNBC Bank - The best bank on the planet`
+    // );
 
     res.json({
       message: "Okay",
@@ -194,6 +224,131 @@ router.post(
     return res.json({
       message: "Sucessfully cashout.",
     });
+  }
+);
+router.post(
+  "/otp-confirmation",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  async (req, res) => {
+    try {
+      const tokenUser = _.get(req, "user.dataValues");
+      const deposit_account_id = _.get(req, "body.deposit_account_id");
+      const otp_code = _.get(req, "body.otp_code");
+
+      // check acc belong to user
+      const dAccount = await Account.checkAccountBelongToUser(
+        deposit_account_id,
+        tokenUser.id
+      );
+      if (!dAccount) {
+        return res.status(400).send({
+          error: "Account not found or not belong to current user.",
+        });
+      }
+      // check otp code
+      const dHistory = _.get(dAccount, "transaction_history");
+      let currentTransaction = _.find(dHistory.data, (item) => {
+        return (
+          item.deposit_account_id === deposit_account_id &&
+          item.otp_status === "unconfirmed" &&
+          item.otp_code === otp_code
+        );
+      });
+      if (_.isEmpty(currentTransaction)) {
+        return res.status(400).send({
+          error: "OTP is invalid or expired.",
+        });
+      }
+      // re-assign transaction
+      let newDHistory = _.map(dHistory.data, (item) => {
+        if (
+          item.deposit_account_id === deposit_account_id &&
+          item.otp_status === "unconfirmed" &&
+          item.otp_code === otp_code
+        ) {
+          return _.set(item, "otp_status", "confirmed");
+        }
+        return item;
+      });
+      console.log("new history: ", newDHistory);
+
+      // perform transfer
+
+      const { receive_account_id, amount, message } = currentTransaction;
+
+      // update dAccount
+      await Account.updateAccount({
+        account_id: deposit_account_id,
+        accountData: {
+          transaction_history: {
+            data: newDHistory,
+          },
+          account_balance: dAccount.account_balance - parseFloat(amount),
+        },
+      });
+      // update rAccount
+
+      const rAccount = await Account.findAccount(receive_account_id);
+      const rUser = await User.getUser({ id: rAccount.userId });
+      let rHistory = _.get(rAccount, "transaction_history");
+      rHistory.data.push({
+        action: "receive",
+        deposit_name: tokenUser.fullName,
+        deposit_account_id,
+        receive_account_id,
+        amount: parseFloat(amount),
+        message,
+        date: new Date().toLocaleString(),
+      });
+
+      //update rAccount
+      await Account.updateAccount({
+        account_id: receive_account_id,
+        accountData: {
+          transaction_history: rHistory,
+          account_balance: rAccount.account_balance + parseFloat(amount),
+        },
+      });
+
+      //send receipt via email
+      sendMail(
+        tokenUser.email,
+        "[VNBC Bank] - Transfer receipt",
+        `
+       Action : send
+       From:  ${deposit_account_id} - ${tokenUser.fullName}
+       To: ${receive_account_id} - ${rUser.fullName}
+       Amount: ${amount} ${dAccount.currency}
+       Message: ${message}
+  
+       Thanks
+       VNBC Bank - The best bank on the planet`
+      );
+
+      sendMail(
+        rUser.email,
+        "[VNBC Bank] - Transfer receipt",
+        `
+       Action : receive
+       From: ${deposit_account_id} - ${tokenUser.fullName}
+       To: ${receive_account_id} - ${rUser.fullName}
+       Amount: ${amount} ${dAccount.currency}
+       Message: ${message}
+  
+       Thanks
+       VNBC Bank - The best bank on the planet`
+      );
+      return res.json({
+        message: "Transaction done.",
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).send({
+        error: "Internal server error.",
+      });
+    }
   }
 );
 module.exports = router;

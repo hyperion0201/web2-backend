@@ -42,7 +42,7 @@ class Account extends Model {
     return await Account.findOne({
       where: {
         account_id,
-        userId,
+        userId: userId,
       },
     });
   }
