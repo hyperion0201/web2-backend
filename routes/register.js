@@ -49,7 +49,7 @@ router.post("/", function (req, res, next) {
         `
       );
 
-      res.json({ user, message: "User created successfully" });
+      res.json({ message: "User created successfully" });
     })
     .catch((err) => {
       res.json({
