@@ -117,8 +117,17 @@ router.post(
         error: "Account not found.",
       });
     }
+    let newHistory = _.get(accountFound, "transaction_history");
+    newHistory.data.push({
+      action: "charge",
+      staff: stateUser.id,
+      amount: parseFloat(amount),
+      date: new Date().toLocaleString(),
+    });
+
     let accountData = {
       account_balance: accountFound.account_balance + parseFloat(amount),
+      transaction_history: newHistory,
     };
     if (
       accountFound.account_type === "saving" &&
@@ -126,6 +135,7 @@ router.post(
     ) {
       _.set(accountData, "active_date", new Date().toLocaleString());
     }
+
     // nap tien xd
     await Account.updateAccount({
       account_id,
@@ -185,9 +195,13 @@ router.post(
       const des_account_id = _.get(req, "body.des_account_id");
 
       const savAccount = await Account.findAccount(sav_account_id);
-      if (!savAccount || savAccount.account_type === "spending") {
+      if (
+        !savAccount ||
+        savAccount.account_type === "spending" ||
+        savAccount.active === false
+      ) {
         return res.status(400).send({
-          error: "Account not found or spending account detected.",
+          error: "Account not found, deactivated or spending account detected.",
         });
       }
       const desAccount = await Account.findAccount(des_account_id);
@@ -196,21 +210,29 @@ router.post(
           error: "Destination account must be spending account.",
         });
       }
-      // set saving balance to 0
-      await Account.updateAccount({
-        account_id: sav_account_id,
-        accountData: {
-          account_balance: 0,
-          active: false,
-        },
-      });
-
       // calc interest
 
       let newBalance = Account.calcInterest({
         balance: savAccount.account_balance,
         dateFrom: new Date(savAccount.active_date),
         dateTo: new Date(),
+      });
+
+      let savHistory = _.get(savAccount, "transaction_history");
+      savHistory.data.push({
+        action: "withdraw",
+        amount: parseFloat(newBalance),
+        message: `Withdraw from saving account: ${sav_account_id}`,
+        date: new Date().toLocaleString(),
+      });
+      // set saving balance to 0
+      await Account.updateAccount({
+        account_id: sav_account_id,
+        accountData: {
+          account_balance: 0,
+          active: false,
+          transaction_history: savHistory,
+        },
       });
 
       let newHistory = _.get(desAccount, "transaction_history");
