@@ -97,6 +97,10 @@ User.init(
     password: {
       type: Sequelize.STRING,
     },
+    verified_email: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
     status: {
       type: Sequelize.ENUM,
       values: ["unverified", "verified", "banned"],
@@ -118,6 +122,11 @@ User.init(
     },
     identity_issued_date: {
       type: Sequelize.DATE,
+      defaultValue: null,
+      allowNull: true
+    },
+    verified_code: {
+      type: Sequelize.STRING,
       defaultValue: null,
       allowNull: true
     },
