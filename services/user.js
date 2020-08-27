@@ -65,6 +65,7 @@ class User extends Model {
     fullName,
     identity_type,
     identity_id,
+    identity_issued_date
   }) => {
     return await User.create({
       username,
@@ -73,6 +74,7 @@ class User extends Model {
       fullName,
       identity_type,
       identity_id,
+      identity_issued_date
     });
   };
 }
@@ -113,6 +115,11 @@ User.init(
       type: Sequelize.STRING,
       defaultValue: null,
       allowNull: true,
+    },
+    identity_issued_date: {
+      type: Sequelize.DATE,
+      defaultValue: null,
+      allowNull: true
     },
     role: {
       type: Sequelize.ENUM,
