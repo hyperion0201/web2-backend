@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const User = require("../services/user");
 const sendMail = require("../services/email");
-const crypto = require('crypto');
-const User = require('../services/user');
+const crypto = require("crypto");
+
 router.post("/", function (req, res, next) {
   const {
     username,
@@ -22,17 +22,21 @@ router.post("/", function (req, res, next) {
     identity_id,
     identity_issued_date: new Date(identity_issued_date).toLocaleString(),
   })
-    .then((user) => {
-      let verifyCode = crypto.randomBytes(20).toString('hex');
-      await User.update({
-        verified_code: verifyCode
-      }, {
-        where: {
-          id: user.id
+    .then(async (user) => {
+      let verifyCode = crypto.randomBytes(20).toString("hex");
+      await User.update(
+        {
+          verified_code: verifyCode,
+        },
+        {
+          where: {
+            id: user.id,
+          },
         }
-      })
+      );
       // send email confirm
-      sendMail(user.email,
+      sendMail(
+        user.email,
         `[VNBC Bank - Confirm your email]`,
         `
         Hello ${user.fullName},
@@ -42,7 +46,8 @@ router.post("/", function (req, res, next) {
 
         Thanks
         VNBC Bank - The best bank on the planet
-        `)
+        `
+      );
 
       res.json({ user, message: "User created successfully" });
     })

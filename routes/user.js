@@ -5,7 +5,6 @@ const passport = require("passport");
 const path = require("path");
 const _ = require("lodash");
 const sendMail = require("../services/email");
-const { use } = require("./register");
 
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
