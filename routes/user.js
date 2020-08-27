@@ -5,6 +5,7 @@ const passport = require("passport");
 const path = require("path");
 const _ = require("lodash");
 const sendMail = require("../services/email");
+const { use } = require("./register");
 
 const storageConfiguration = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -165,4 +166,32 @@ router.put(
     }
   }
 );
+router.get("/email-confirmation", async (req, res) => {
+  const username = _.get(req, "query.username");
+  const verifyCode = _.get(req, "query.verifyCode");
+  const user = await User.findOne({
+    where: {
+      username,
+      verified_code: verifyCode,
+    },
+  });
+  if (!user) {
+    return res.status(400).send({
+      error: "User not found or invalid code.",
+    });
+  }
+  // active email user
+  await User.update(
+    {
+      verified_email: true,
+      verified_code: "",
+    },
+    {
+      where: {
+        id: user.id,
+      },
+    }
+  );
+  res.redirect("/");
+});
 module.exports = router;
