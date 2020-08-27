@@ -149,4 +149,51 @@ router.get(
     res.json(account.transaction_history);
   }
 );
+router.post(
+  "/cashout",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  async (req, res) => {
+    const user = _.get(req, "user.dataValues");
+    if (user.role !== "staff") {
+      return res.status(400).send({
+        error: "Staff required.",
+      });
+    }
+    const spending_account_id = _.get(req, "body.spending_account_id");
+    const amount = _.get(req, "body.amount", 0);
+    const account = await Account.findAccount(spending_account_id);
+    if (!account || account.account_type === "saving") {
+      return res.status(400).send({
+        error: "Account not found or must be spending account.",
+      });
+    }
+    // check balance to cashout
+    if (account.account_balance <= parseFloat(amount)) {
+      return res.status(400).send({
+        error: "Not enough money to cashout.",
+      });
+    }
+
+    // perform cashout
+    let transHistory = _.get(account, "transaction_history");
+    transHistory.data.push({
+      action: "cashout",
+      amount: parseFloat(amount),
+      date: new Date().toLocaleString(),
+    });
+    //update account
+    await Account.updateAccount({
+      account_id: spending_account_id,
+      accountData: {
+        transaction_history: transHistory,
+        account_balance: account.account_balance - parseFloat(amount),
+      },
+    });
+    return res.json({
+      message: "Sucessfully cashout.",
+    });
+  }
+);
 module.exports = router;
