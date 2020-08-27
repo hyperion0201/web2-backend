@@ -13,10 +13,14 @@ router.post("/", async function (req, res, next) {
     if (User.verifyPassword(password, user.password)) {
       let payload = { id: user.id, role: user.role };
       let token = jwt.sign(payload, JWT_SECRET, {
-       issuer: 'vnbc@rip113',
-        expiresIn: '1d'
+        issuer: "vnbc@rip113",
+        expiresIn: "1d",
       });
-      res.json({ message: "ok", token: token });
+      res.json({
+        message: "ok",
+        token: token,
+        verified_email: user.verified_email,
+      });
     } else {
       res.status(401).json({ msg: "Password is incorrect" });
     }

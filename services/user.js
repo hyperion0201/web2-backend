@@ -65,7 +65,7 @@ class User extends Model {
     fullName,
     identity_type,
     identity_id,
-    identity_issued_date
+    identity_issued_date,
   }) => {
     return await User.create({
       username,
@@ -74,7 +74,7 @@ class User extends Model {
       fullName,
       identity_type,
       identity_id,
-      identity_issued_date
+      identity_issued_date,
     });
   };
 }
@@ -99,7 +99,7 @@ User.init(
     },
     verified_email: {
       type: Sequelize.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
     status: {
       type: Sequelize.ENUM,
@@ -123,12 +123,12 @@ User.init(
     identity_issued_date: {
       type: Sequelize.DATE,
       defaultValue: null,
-      allowNull: true
+      allowNull: true,
     },
     verified_code: {
       type: Sequelize.STRING,
       defaultValue: null,
-      allowNull: true
+      allowNull: true,
     },
     role: {
       type: Sequelize.ENUM,

@@ -191,6 +191,6 @@ router.get("/email-confirmation", async (req, res) => {
       },
     }
   );
-  res.redirect("/");
+  res.redirect("https://vnbc-bank.herokuapp.com/");
 });
 module.exports = router;
